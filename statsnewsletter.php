@@ -32,7 +32,6 @@ class statsnewsletter extends ModuleGraph
     private $_html = '';
     private $_query = '';
     private $_query2 = '';
-    private $_option = '';
 
     private $table_name;
     private $newsletter_module_name;
