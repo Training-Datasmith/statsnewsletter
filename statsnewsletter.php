@@ -58,11 +58,26 @@ class statsnewsletter extends ModuleGraph
         $this->ps_versions_compliancy = ['min' => '1.7.1.0', 'max' => _PS_VERSION_];
     }
 
+    /**
+     * Install the module and register the stats dashboard hook.
+     *
+     * @return bool True on successful installation, false otherwise
+     */
     public function install()
     {
         return parent::install() && $this->registerHook('displayAdminStatsModules');
     }
 
+    /**
+     * Render the newsletter subscription chart on the admin statistics dashboard.
+     *
+     * Requires the ps_emailsubscription module to be installed; displays a notice if absent.
+     * Presents subscription counts split by customer vs. guest subscriber.
+     *
+     * @param array $params Hook parameters passed by PrestaShop (unused)
+     *
+     * @return string HTML output for the statistics widget
+     */
     public function hookDisplayAdminStatsModules($params)
     {
         if (Module::isInstalled($this->newsletter_module_name)) {
