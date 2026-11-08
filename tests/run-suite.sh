@@ -2,19 +2,35 @@
 set -euo pipefail
 
 REPO="$(cd "$(dirname "$0")/.." && pwd)"
-if [[ -n "${DOCKER:-}" ]]; then
-  read -r -a DOCKER_CMD <<<"$DOCKER"
-else
-  DOCKER_CMD=()
-  if docker info >/dev/null 2>&1; then
-    DOCKER_CMD=(docker)
-  elif sudo docker info >/dev/null 2>&1; then
+USE_SUDO_DOCKER="${USE_SUDO_DOCKER:-0}"
+
+resolve_docker_cmd() {
+  if [[ -n "${DOCKER:-}" ]]; then
+    read -r -a DOCKER_CMD <<<"$DOCKER"
+    local word
+    for word in "${DOCKER_CMD[@]}"; do
+      if [[ "$word" == "sudo" ]]; then
+        echo 'DOCKER must not include sudo; set USE_SUDO_DOCKER=1 instead' >&2
+        exit 1
+      fi
+    done
+    return
+  fi
+
+  if [[ "$USE_SUDO_DOCKER" == "1" ]]; then
     DOCKER_CMD=(sudo docker)
   else
-    echo 'docker is not available' >&2
+    DOCKER_CMD=(docker)
+  fi
+
+  if ! "${DOCKER_CMD[@]}" info >/dev/null 2>&1; then
+    echo 'docker is not available (set USE_SUDO_DOCKER=1 only when you explicitly need sudo)' >&2
     exit 127
   fi
-fi
+}
+
+resolve_docker_cmd
+
 PHP_IMAGE_DIGEST='php@sha256:6ce95208609dc66df163ab936c970b3b34cd901b85c747102c5999f08ade9143'
 MARIADB_IMAGE='mariadb@sha256:6a12617127de7ad42895232407abf403ae79f465bb818a8ac7ffbb97b8b18937'
 PHPUNIT_URL='https://phar.phpunit.de/phpunit-4.8.36.phar'

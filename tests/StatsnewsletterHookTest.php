@@ -31,9 +31,13 @@ class StatsnewsletterHookTest extends StatsnewsletterTestCase
         $module = new statsnewsletter();
         $html = $module->hookDisplayAdminStatsModules(array());
 
-        $this->assertRegExp('/Customer registrations:\D*2/', $html);
-        $this->assertRegExp('/Visitor registrations:\D*3/', $html);
-        $this->assertRegExp('/Both:\D*5/', $html);
+        $matches = array();
+        $this->assertSame(1, preg_match('/Customer registrations:\D*(?<!\d)(\d+)(?!\d)/', $html, $matches));
+        $this->assertSame(2, (int) $matches[1]);
+        $this->assertSame(1, preg_match('/Visitor registrations:\D*(?<!\d)(\d+)(?!\d)/', $html, $matches));
+        $this->assertSame(3, (int) $matches[1]);
+        $this->assertSame(1, preg_match('/Both:\D*(?<!\d)(\d+)(?!\d)/', $html, $matches));
+        $this->assertSame(5, (int) $matches[1]);
     }
 
     public function testHookEscapesExportLink()
